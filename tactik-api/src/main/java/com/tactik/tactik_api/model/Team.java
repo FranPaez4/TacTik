@@ -22,6 +22,8 @@ public class Team {
 
     private String Season;
 
+    private String coachName;
+
     @OneToMany (mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players;
 
