@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "users")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -17,8 +19,20 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String surname;
+
+    @Column(nullable = false)
+    private LocalDate birthday;
+
+    @Column(nullable = false)
+    private String telephone;
+
     @Column (nullable = false, unique = true)
     private String email;
+
+    @Column (nullable = false, unique = true)
+    private String dni;
 
     @Column (nullable = false)
     private String password;

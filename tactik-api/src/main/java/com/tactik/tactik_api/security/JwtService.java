@@ -13,7 +13,7 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${api.security.token.secret}")
+    @Value("${api.security.token.secret:cT2xR5v8Yp3s6V9yB4wE7zA1mD0fH2kL5jN8qU3oW6iX9gC4tP1rS0eM7aZ2bV5c}")
     private String secretKey;
 
     // Metodo que crea el token cuando el usuario hace login
