@@ -1,6 +1,6 @@
 package com.tactik.tactik_api.dto;
 
-public record TeamResponseDTO(
+public record TeamResponseDto(
         Long id,
         String name,
         String category,

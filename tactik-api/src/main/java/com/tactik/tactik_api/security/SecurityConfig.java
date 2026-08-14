@@ -40,10 +40,10 @@ public class SecurityConfig {
                         // Dejamos libres las puertas de login/registro y la web de Swagger para probar
                         .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/teams/**", "/api/players/**").hasAnyAuthority("ADMIN", "COACH")
-                        .requestMatchers(HttpMethod.PUT, "/api/teams/**", "/api/players/**").hasAnyAuthority("ADMIN", "COACH")
-                        .requestMatchers(HttpMethod.DELETE, "/api/teams/**", "/api/players/**").hasAnyAuthority("ADMIN", "COACH")
-                        .requestMatchers(HttpMethod.GET, "/api/teams/**", "/api/players/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/teams/**", "/api/players/**", "/api/trainings/**").hasAnyAuthority("ADMIN", "COACH")
+                        .requestMatchers(HttpMethod.PUT, "/api/teams/**", "/api/players/**", "/api/trainings/**").hasAnyAuthority("ADMIN", "COACH")
+                        .requestMatchers(HttpMethod.DELETE, "/api/teams/**", "/api/players/**", "/api/trainings/**").hasAnyAuthority("ADMIN", "COACH")
+                        .requestMatchers(HttpMethod.GET, "/api/teams/**", "/api/players/**", "/api/trainings/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 // Le decimos que no guarde sesiones, cada petición debe traer su token

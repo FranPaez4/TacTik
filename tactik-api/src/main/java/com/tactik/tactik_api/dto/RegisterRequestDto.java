@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class RegisterRequestDTO {
+public class RegisterRequestDto {
     private String name;
     private String surname;
     private LocalDate birthday;

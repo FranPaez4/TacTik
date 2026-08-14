@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class PlayerRequestDTO {
+public class PlayerRequestDto {
    private String firstName;
    private String lastName;
    private Integer dorsalNumber;

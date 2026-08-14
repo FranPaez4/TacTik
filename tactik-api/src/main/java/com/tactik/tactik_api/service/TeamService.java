@@ -1,9 +1,9 @@
 package com.tactik.tactik_api.service;
 
-import com.tactik.tactik_api.dto.TeamResponseDTO;
+import com.tactik.tactik_api.dto.TeamResponseDto;
 import com.tactik.tactik_api.model.Team;
 import com.tactik.tactik_api.repository.TeamRepository;
-import com.tactik.tactik_api.dto.TeamRequestDTO;
+import com.tactik.tactik_api.dto.TeamRequestDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class TeamService {
         this.teamRepository = teamRepository;
     }
 
-    public TeamResponseDTO createTeam(TeamRequestDTO request) {
+    public TeamResponseDto createTeam(TeamRequestDto request) {
         Team team = new Team();
         team.setName(request.name());
         team.setCategory(request.category());
@@ -29,7 +29,7 @@ public class TeamService {
         Team savedTeam = teamRepository.save(team);
 
 
-        return new TeamResponseDTO(
+        return new TeamResponseDto(
                 savedTeam.getId(),
                 savedTeam.getName(),
                 savedTeam.getCategory(),
@@ -38,10 +38,10 @@ public class TeamService {
         );
     }
 
-        public List<TeamResponseDTO> getAllTeams() {
+        public List<TeamResponseDto> getAllTeams() {
         List<Team> teams = teamRepository.findAll();
         return teams.stream()
-                .map(team -> new TeamResponseDTO(
+                .map(team -> new TeamResponseDto(
                         team.getId(),
                         team.getName(),
                         team.getCategory(),
@@ -52,7 +52,7 @@ public class TeamService {
     }
 
     // Metodo para actualizar un equipo existente
-    public TeamResponseDTO updateTeam(Long id, TeamRequestDTO request) {
+    public TeamResponseDto updateTeam(Long id, TeamRequestDto request) {
         // 1. Buscamos el equipo por su ID. Si no existe, lanzamos una excepción.
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado con el ID: " + id));
@@ -67,7 +67,7 @@ public class TeamService {
         Team updatedTeam = teamRepository.save(team);
 
         // 4. Devolvemos el DTO actualizado al controlador
-        return new TeamResponseDTO(
+        return new TeamResponseDto(
                 updatedTeam.getId(),
                 updatedTeam.getName(),
                 updatedTeam.getCategory(),

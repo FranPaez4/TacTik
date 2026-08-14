@@ -1,7 +1,7 @@
 package com.tactik.tactik_api.controller;
 
-import com.tactik.tactik_api.dto.PlayerRequestDTO;
-import com.tactik.tactik_api.dto.PlayerResponseDTO;
+import com.tactik.tactik_api.dto.PlayerRequestDto;
+import com.tactik.tactik_api.dto.PlayerResponseDto;
 import com.tactik.tactik_api.service.PlayerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +22,16 @@ public class PlayerController {
 
     // 1. POST: Dar de alta a un nuevo jugador
     @PostMapping
-    public ResponseEntity<PlayerResponseDTO> createPlayer(@RequestBody PlayerRequestDTO request) {
-        PlayerResponseDTO createdPlayer = playerService.createPlayer(request);
+    public ResponseEntity<PlayerResponseDto> createPlayer(@RequestBody PlayerRequestDto request) {
+        PlayerResponseDto createdPlayer = playerService.createPlayer(request);
         return new ResponseEntity<>(createdPlayer, HttpStatus.CREATED);
     }
 
     // 2. GET: Obtener todos los jugadores de una categoría específica
 
     @GetMapping("/category/{categoryName}")
-    public ResponseEntity<List<PlayerResponseDTO>> getPlayersByCategory(@PathVariable String categoryName) {
-        List<PlayerResponseDTO> players = playerService.getPlayersByCategory(categoryName);
+    public ResponseEntity<List<PlayerResponseDto>> getPlayersByCategory(@PathVariable String categoryName) {
+        List<PlayerResponseDto> players = playerService.getPlayersByCategory(categoryName);
         return ResponseEntity.ok(players);
     }
 
@@ -43,11 +43,11 @@ public class PlayerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlayerResponseDTO> updatePlayer(
+    public ResponseEntity<PlayerResponseDto> updatePlayer(
             @PathVariable Long id,
-            @RequestBody PlayerRequestDTO requestDTO) {
+            @RequestBody PlayerRequestDto requestDTO) {
 
-        PlayerResponseDTO updatedPlayer = playerService.updatePlayer(id, requestDTO);
+        PlayerResponseDto updatedPlayer = playerService.updatePlayer(id, requestDTO);
         return ResponseEntity.ok(updatedPlayer);
     }
 }

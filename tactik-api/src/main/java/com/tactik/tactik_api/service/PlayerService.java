@@ -1,7 +1,7 @@
 package com.tactik.tactik_api.service;
 
-import com.tactik.tactik_api.dto.PlayerRequestDTO;
-import com.tactik.tactik_api.dto.PlayerResponseDTO;
+import com.tactik.tactik_api.dto.PlayerRequestDto;
+import com.tactik.tactik_api.dto.PlayerResponseDto;
 import com.tactik.tactik_api.model.Player;
 import com.tactik.tactik_api.model.Team;
 import com.tactik.tactik_api.repository.PlayerRepository;
@@ -23,7 +23,7 @@ public class PlayerService {
         this.teamRepository = teamRepository;
     }
 
-    public PlayerResponseDTO createPlayer(PlayerRequestDTO request) {
+    public PlayerResponseDto createPlayer(PlayerRequestDto request) {
 
         Team team = teamRepository.findById(request.getTeamId())
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado con el ID: " + request.getTeamId()));
@@ -44,7 +44,7 @@ public class PlayerService {
         return mapToDTO(savedPlayer);
     }
 
-    public List<PlayerResponseDTO> getPlayersByCategory(String category) {
+    public List<PlayerResponseDto> getPlayersByCategory(String category) {
 
         List<Player> players = playerRepository.findByTeamCategory(category);
 
@@ -60,8 +60,8 @@ public class PlayerService {
         playerRepository.deleteById(id);
     }
 
-    private PlayerResponseDTO mapToDTO(Player player) {
-        return new PlayerResponseDTO(
+    private PlayerResponseDto mapToDTO(Player player) {
+        return new PlayerResponseDto(
                 player.getId(),
                 player.getFirstName(),
                 player.getLastName(),
@@ -74,7 +74,7 @@ public class PlayerService {
     }
 
     @Transactional
-    public PlayerResponseDTO updatePlayer(Long id, PlayerRequestDTO requestDTO) {
+    public PlayerResponseDto updatePlayer(Long id, PlayerRequestDto requestDTO) {
         // 1. Buscamos al jugador, si no existe lanzamos error
         Player player = playerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Jugador no encontrado con el ID: " + id));
@@ -97,7 +97,7 @@ public class PlayerService {
         Player updatedPlayer = playerRepository.save(player);
 
         // 5. Devolvemos el DTO actualizado
-        return new PlayerResponseDTO(
+        return new PlayerResponseDto(
                 updatedPlayer.getId(),
                 updatedPlayer.getFirstName(),
                 updatedPlayer.getLastName(),

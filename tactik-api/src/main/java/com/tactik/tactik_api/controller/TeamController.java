@@ -1,7 +1,7 @@
 package com.tactik.tactik_api.controller;
 
-import com.tactik.tactik_api.dto.TeamRequestDTO;
-import com.tactik.tactik_api.dto.TeamResponseDTO;
+import com.tactik.tactik_api.dto.TeamRequestDto;
+import com.tactik.tactik_api.dto.TeamResponseDto;
 import com.tactik.tactik_api.service.TeamService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,23 +21,23 @@ public class TeamController {
     }
 
     @PostMapping
-    public ResponseEntity<TeamResponseDTO> createTeam(@Valid @RequestBody TeamRequestDTO request) {
-        TeamResponseDTO createdTeam = teamService.createTeam(request);
+    public ResponseEntity<TeamResponseDto> createTeam(@Valid @RequestBody TeamRequestDto request) {
+        TeamResponseDto createdTeam = teamService.createTeam(request);
 
         return new ResponseEntity<>(createdTeam, HttpStatus.CREATED);
     }
 
 
     @GetMapping
-    public ResponseEntity<List<TeamResponseDTO>> getAllTeams() {
-        List<TeamResponseDTO> teams = teamService.getAllTeams();
+    public ResponseEntity<List<TeamResponseDto>> getAllTeams() {
+        List<TeamResponseDto> teams = teamService.getAllTeams();
 
         return ResponseEntity.ok(teams);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TeamResponseDTO> updateTeam(@PathVariable Long id, @RequestBody TeamRequestDTO request) {
-        TeamResponseDTO updatedTeam = teamService.updateTeam(id, request);
+    public ResponseEntity<TeamResponseDto> updateTeam(@PathVariable Long id, @RequestBody TeamRequestDto request) {
+        TeamResponseDto updatedTeam = teamService.updateTeam(id, request);
         return ResponseEntity.ok(updatedTeam);
     }
 

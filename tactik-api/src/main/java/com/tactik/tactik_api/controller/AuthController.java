@@ -1,8 +1,8 @@
 package com.tactik.tactik_api.controller;
 
-import com.tactik.tactik_api.dto.AuthRequestDTO;
-import com.tactik.tactik_api.dto.AuthResponseDTO;
-import com.tactik.tactik_api.dto.RegisterRequestDTO;
+import com.tactik.tactik_api.dto.AuthRequestDto;
+import com.tactik.tactik_api.dto.AuthResponseDto;
+import com.tactik.tactik_api.dto.RegisterRequestDto;
 import com.tactik.tactik_api.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,13 +21,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@RequestBody RegisterRequestDTO request) {
+    public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterRequestDto request) {
         // Recibe el JSON del frontend y se lo pasa al metodo register
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthResponseDTO> authenticate(@RequestBody AuthRequestDTO request) {
+    public ResponseEntity<AuthResponseDto> authenticate(@RequestBody AuthRequestDto request) {
         // Recibe el JSON del frontend y se lo pasa al metodo authenticate
         return ResponseEntity.ok(authService.authenticate(request));
     }

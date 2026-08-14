@@ -1,8 +1,8 @@
 package com.tactik.tactik_api.service;
 
-import com.tactik.tactik_api.dto.AuthRequestDTO;
-import com.tactik.tactik_api.dto.AuthResponseDTO;
-import com.tactik.tactik_api.dto.RegisterRequestDTO;
+import com.tactik.tactik_api.dto.AuthRequestDto;
+import com.tactik.tactik_api.dto.AuthResponseDto;
+import com.tactik.tactik_api.dto.RegisterRequestDto;
 import com.tactik.tactik_api.model.Role;
 import com.tactik.tactik_api.model.User;
 import com.tactik.tactik_api.repository.UserRepository;
@@ -27,7 +27,7 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-public AuthResponseDTO register(RegisterRequestDTO request) {
+public AuthResponseDto register(RegisterRequestDto request) {
     // 1. Creamos un nuevo usuario con los datos que llegan desde el frontend
     User user = new User();
     user.setName(request.getName());
@@ -44,12 +44,12 @@ public AuthResponseDTO register(RegisterRequestDTO request) {
 
     String jwtToken = jwtService.generateToken(user.getUsername());
 
-    return AuthResponseDTO.builder()
+    return AuthResponseDto.builder()
             .token(jwtToken)
             .build();
     }
 
-    public AuthResponseDTO authenticate(AuthRequestDTO request) {
+    public AuthResponseDto authenticate(AuthRequestDto request) {
         // 1. El AuthenticationManager comprueba mágicamente si el email y la contraseña coinciden
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -66,7 +66,7 @@ public AuthResponseDTO register(RegisterRequestDTO request) {
         String jwtToken = jwtService.generateToken(user.getUsername());
 
         // 4. Se lo mandamos al frontend
-        return AuthResponseDTO.builder()
+        return AuthResponseDto.builder()
                 .token(jwtToken)
                 .build();
     }
