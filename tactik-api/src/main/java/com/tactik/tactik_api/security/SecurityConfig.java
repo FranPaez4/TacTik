@@ -3,6 +3,7 @@ package com.tactik.tactik_api.security;
 import com.tactik.tactik_api.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -37,7 +38,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Desactivamos CSRF porque usamos tokens JWT, no cookies
                 .authorizeHttpRequests(auth -> auth
                         // Dejamos libres las puertas de login/registro y la web de Swagger para probar
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/teams/**", "/api/players/**").hasAnyAuthority("ADMIN", "COACH")
+                        .requestMatchers(HttpMethod.PUT, "/api/teams/**", "/api/players/**").hasAnyAuthority("ADMIN", "COACH")
+                        .requestMatchers(HttpMethod.DELETE, "/api/teams/**", "/api/players/**").hasAnyAuthority("ADMIN", "COACH")
+                        .requestMatchers(HttpMethod.GET, "/api/teams/**", "/api/players/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 // Le decimos que no guarde sesiones, cada petición debe traer su token
