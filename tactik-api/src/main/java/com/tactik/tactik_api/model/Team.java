@@ -20,7 +20,7 @@ public class Team {
 
     private String category;
 
-    private String Season;
+    private String season;
 
     private String coachName;
 
