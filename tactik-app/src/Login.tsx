@@ -1,13 +1,34 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from './api/axio';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errores, setErrores] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Aquí conectaremos con el backend en Java más adelante
-    console.log('Intentando acceder con:', username, password);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // Evita que la página recargue
+    setErrores({}); // Limpia errores anteriores
+
+    try {
+      
+      const response = await api.post('auth/authenticate', { 
+        email: email.toLowerCase(),
+       password: password 
+      });
+      localStorage.setItem('tactik_token', response.data.token); // Guardamos el token en localStorage
+      navigate('/dashboard'); 
+    } catch (error: any) {
+      
+      if (error.response?.status === 400) {
+        setErrores(error.response.data); // Guardamos los errores del backend
+      } else {
+        console.error("Error inesperado en el servidor:", error);
+      }
+    }
+  
   };
 
   return (
@@ -18,17 +39,18 @@ export default function Login() {
           <p className="text-slate-500">Inicia sesión en tu pizarra táctica</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
             <input 
               type="text" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"
               placeholder="tu_usuario"
               required
             />
+            {errores.email && <p className="text-red-500 text-sm mt-1">{errores.email}</p>}
           </div>
 
           <div>
@@ -41,6 +63,7 @@ export default function Login() {
               placeholder="••••••••"
               required
             />
+            {errores.password && <p className="text-red-500 text-sm mt-1">{errores.password}</p>}
           </div>
 
           <button 
