@@ -4,9 +4,12 @@ import com.tactik.tactik_api.dto.PlayerRequestDto;
 import com.tactik.tactik_api.dto.PlayerResponseDto;
 import com.tactik.tactik_api.model.Player;
 import com.tactik.tactik_api.model.Team;
+import com.tactik.tactik_api.model.User;
 import com.tactik.tactik_api.repository.PlayerRepository;
 import com.tactik.tactik_api.repository.TeamRepository;
+import com.tactik.tactik_api.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,16 +20,33 @@ public class PlayerService {
 
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
 
-    public PlayerService(PlayerRepository playerRepository, TeamRepository teamRepository) {
+    public PlayerService(PlayerRepository playerRepository, TeamRepository teamRepository, UserRepository userRepository) {
         this.playerRepository = playerRepository;
         this.teamRepository = teamRepository;
+        this.userRepository = userRepository;
     }
 
     public PlayerResponseDto createPlayer(PlayerRequestDto request) {
 
         Team team = teamRepository.findById(request.getTeamId())
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado con el ID: " + request.getTeamId()));
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // Buscamos al entrenador en la base de datos
+        User coach = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado"));
+
+        if (team.getClub() == null || coach.getClub() == null) {
+            throw new RuntimeException("El equipo o el entrenador no tienen un club asignado correctamente en la base de datos.");
+        }
+
+        // 2. Comprobamos por seguridad que el equipo es del mismo Club que el Entrenador
+        if (!team.getClub().getId().equals(coach.getClub().getId())) {
+            throw new RuntimeException("No puedes añadir jugadores a otro club.");
+        }
 
         // Construimos el jugador con los datos del DTO
         Player player = new Player();
