@@ -6,6 +6,7 @@ import com.tactik.tactik_api.dto.TrainingResponseDto;
 import com.tactik.tactik_api.service.TrainingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,10 +21,11 @@ public class TrainingController {
         this.trainingService = trainingService;
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COACH')")
     @PostMapping
     public ResponseEntity<TrainingResponseDto> createTraining(@RequestBody TrainingRequestDto requestDTO) {
         TrainingResponseDto createdTraining = trainingService.createTraining(requestDTO);
-        // Devolvemos un código 201 (Created) que es el estándar profesional al insertar datos
+
         return new ResponseEntity<>(createdTraining, HttpStatus.CREATED);
     }
 
@@ -40,6 +42,7 @@ public class TrainingController {
     }
 
     // 3. Actualizar un entrenamiento
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COACH')")
     @PutMapping("/{id}")
     public ResponseEntity<TrainingResponseDto> updateTraining(
             @PathVariable Long id,
@@ -48,6 +51,7 @@ public class TrainingController {
     }
 
     // 4. Borrar un entrenamiento
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COACH')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTraining(@PathVariable Long id) {
         trainingService.deleteTraining(id);
@@ -55,6 +59,7 @@ public class TrainingController {
     }
 
     // 5. Pasar lista: Registrar las ausencias de un entrenamiento
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'COACH')")
     @PutMapping("/{id}/absences")
     public ResponseEntity<TrainingResponseDto> registerAbsences(
             @PathVariable Long id,

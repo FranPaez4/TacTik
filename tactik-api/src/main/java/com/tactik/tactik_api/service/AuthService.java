@@ -35,11 +35,11 @@ public AuthResponseDto register(RegisterRequestDto request) {
     user.setBirthday(request.getBirthday());
     user.setDni(request.getDni());
     user.setTelephone(request.getTelephone());
-    user.setEmail(request.getEmail());
+    user.setEmail(request.getEmail().toLowerCase());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
-    user.setRole(Role.COACH);
+    user.setRole(Role.ADMIN);
 
-    // 2. Guardamos al entrenador en la base de datos
+    // 2. Guardamos en la base de datos
     userRepository.save(user);
 
     String jwtToken = jwtService.generateToken(user.getUsername());

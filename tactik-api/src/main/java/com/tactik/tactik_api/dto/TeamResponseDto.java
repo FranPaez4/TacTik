@@ -5,7 +5,8 @@ public record TeamResponseDto(
         String name,
         String category,
         String season,
-        String coachName
+        String coachName,
+        String invitationCode
 
 ) {
 }

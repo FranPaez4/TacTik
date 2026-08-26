@@ -24,7 +24,14 @@ public class Team {
 
     private String coachName;
 
+    @Column(unique = true)
+    private String invitationCode;
+
     @OneToMany (mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Player> players;
+
+    @ManyToOne
+    @JoinColumn(name = "club_id")
+    private Club club;
 
 }

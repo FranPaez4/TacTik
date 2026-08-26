@@ -20,4 +20,9 @@ public class RegisterRequestDto {
     private String telephone;
     private String email;
     private String password;
+    // Club
+    private String clubName;
+    private String city;
+    private String colors;
+
 }

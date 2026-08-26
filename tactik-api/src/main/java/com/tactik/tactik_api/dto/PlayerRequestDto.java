@@ -18,6 +18,5 @@ public class PlayerRequestDto {
    private Integer dorsalNumber;
    private String position;
    private LocalDate birthDate;
-   private String familyInviteCode;
    private Long teamId;
 }
