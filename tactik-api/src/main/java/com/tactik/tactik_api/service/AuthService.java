@@ -4,9 +4,11 @@ import com.tactik.tactik_api.dto.AuthRequestDto;
 import com.tactik.tactik_api.dto.AuthResponseDto;
 import com.tactik.tactik_api.dto.CoachRegisterRequestDto;
 import com.tactik.tactik_api.dto.RegisterRequestDto;
+import com.tactik.tactik_api.model.Club;
 import com.tactik.tactik_api.model.Role;
 import com.tactik.tactik_api.model.Team;
 import com.tactik.tactik_api.model.User;
+import com.tactik.tactik_api.repository.ClubRepository;
 import com.tactik.tactik_api.repository.TeamRepository;
 import com.tactik.tactik_api.repository.UserRepository;
 import com.tactik.tactik_api.security.JwtService;
@@ -25,16 +27,30 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TeamRepository teamRepository;
+    private final ClubRepository clubRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository, ClubRepository clubRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.teamRepository = teamRepository;
+        this.clubRepository = clubRepository;
     }
 
 public AuthResponseDto register(RegisterRequestDto request) {
+
+        var club = Club.builder()
+            .clubName(request.getClubName())
+            .city(request.getCity())
+            .colors(request.getColors())
+            .badgeUrl(request.getBadgeUrl()) // <--- Aquí guardamos la URL de Cloudinary
+            .subscriptionPlan("FREE")
+            .isActive(true)
+            .build();
+
+    clubRepository.save(club);
+
     // 1. Creamos un nuevo usuario con los datos que llegan desde el frontend
     User user = new User();
     user.setName(request.getName());
@@ -45,6 +61,7 @@ public AuthResponseDto register(RegisterRequestDto request) {
     user.setEmail(request.getEmail().toLowerCase());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
     user.setRole(Role.ADMIN);
+    user.setClub(club);
 
     // 2. Guardamos en la base de datos
     userRepository.save(user);

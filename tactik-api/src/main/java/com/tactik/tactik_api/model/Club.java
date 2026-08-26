@@ -24,7 +24,7 @@ public class Club {
     private String city;
     private String colors;
 
-    private String logoUrl; // El escudo del club
+    private String badgeUrl; // El escudo del club
 
     @Column(nullable = false)
     @Builder.Default

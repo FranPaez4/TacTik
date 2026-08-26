@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from './api/axio';
-import { Shield, Clipboard, X, User } from 'lucide-react';
+import { Shield, Upload, User } from 'lucide-react';
 import logoTactik from './assets/logo.png';
 import bgCesped from './assets/bg-cesped.jpg';
 
@@ -11,6 +11,7 @@ export default function Register() {
     clubName: '',
     city: '',
     colors: '',
+    badgeUrl: '',
     name: '',
     surname: '',
     birthday: '',
@@ -20,6 +21,7 @@ export default function Register() {
     password: ''
   });
   
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errores, setErrores] = useState<Record<string, string>>({});
   const navigate = useNavigate();
@@ -30,6 +32,31 @@ export default function Register() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const data = new FormData();
+    data.append('file', file);
+    data.append('upload_preset', 'tactik_preset'); // <-- Tu preset de Cloudinary
+
+    setUploadingImage(true);
+    try {
+      // Reemplaza 'tu_cloud_name' por tu nombre de Cloudinary real
+      const res = await fetch('https://api.cloudinary.com/v1_1/tu_cloud_name/image/upload', {
+        method: 'POST',
+        body: data
+      });
+      const fileUploaded = await res.json();
+      setFormData(prev => ({ ...prev, badgeUrl: fileUploaded.secure_url }));
+    } catch (err) {
+      console.error("Error subiendo la imagen", err);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,6 +141,25 @@ export default function Register() {
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
                   {errores.colors && <p className="text-red-400 text-sm mt-1">{errores.colors}</p>}
                 </div>
+                {/* Selector de Escudo / Logotipo */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Escudo del Club</label>
+                <div className="flex items-center gap-4">
+                  <label className="flex-1 flex flex-col items-center px-4 py-3 bg-white border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-emerald-500 transition">
+                    <Upload className="w-5 h-5 text-slate-400 mb-1" />
+                    <span className="text-xs text-slate-500 font-medium">
+                      {uploadingImage ? "Subiendo escudo..." : "Sube el logo del equipo"}
+                    </span>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                  
+                  {formData.badgeUrl && (
+                    <div className="w-16 h-16 border rounded-lg overflow-hidden bg-slate-50 flex items-center justify-center p-1">
+                      <img src={formData.badgeUrl} alt="Escudo preview" className="w-full h-full object-contain" />
+                    </div>
+                  )}
+                </div>
+              </div>
               </div>
             </div>
           </div>
