@@ -35,7 +35,9 @@ public class PlayerService {
         player.setDorsalNumber(request.getDorsalNumber());
         player.setPosition(request.getPosition());
         player.setBirthDate(request.getBirthDate());
-        player.setFamilyInviteCode(request.getFamilyInviteCode());
+        // 1. Generamos el código aleatorio de 6 caracteres
+        String codigoGenerado = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+        player.setFamilyInviteCode(codigoGenerado);
 
         player.setTeam(team);
 
@@ -107,5 +109,15 @@ public class PlayerService {
                 updatedPlayer.getFamilyInviteCode(),
                 updatedPlayer.getTeam() != null ? updatedPlayer.getTeam().getId() : null
         );
+    }
+
+    // Añadimos un metodo para buscar jugadores por nombre o apellido
+    public List<PlayerResponseDto> searchPlayersByName(String name) {
+        // Le pasamos el "name" dos veces porque busca en firstName o en lastName
+        List<Player> players = playerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+
+        return players.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 }

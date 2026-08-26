@@ -2,9 +2,12 @@ package com.tactik.tactik_api.service;
 
 import com.tactik.tactik_api.dto.AuthRequestDto;
 import com.tactik.tactik_api.dto.AuthResponseDto;
+import com.tactik.tactik_api.dto.CoachRegisterRequestDto;
 import com.tactik.tactik_api.dto.RegisterRequestDto;
 import com.tactik.tactik_api.model.Role;
+import com.tactik.tactik_api.model.Team;
 import com.tactik.tactik_api.model.User;
+import com.tactik.tactik_api.repository.TeamRepository;
 import com.tactik.tactik_api.repository.UserRepository;
 import com.tactik.tactik_api.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,12 +22,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TeamRepository teamRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.teamRepository = teamRepository;
     }
 
 public AuthResponseDto register(RegisterRequestDto request) {
@@ -35,11 +40,11 @@ public AuthResponseDto register(RegisterRequestDto request) {
     user.setBirthday(request.getBirthday());
     user.setDni(request.getDni());
     user.setTelephone(request.getTelephone());
-    user.setEmail(request.getEmail());
+    user.setEmail(request.getEmail().toLowerCase());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
-    user.setRole(Role.COACH);
+    user.setRole(Role.ADMIN);
 
-    // 2. Guardamos al entrenador en la base de datos
+    // 2. Guardamos en la base de datos
     userRepository.save(user);
 
     String jwtToken = jwtService.generateToken(user.getUsername());
@@ -47,6 +52,31 @@ public AuthResponseDto register(RegisterRequestDto request) {
     return AuthResponseDto.builder()
             .token(jwtToken)
             .build();
+    }
+
+    public AuthResponseDto registerCoach(CoachRegisterRequestDto request) {
+        // 1. Comprobamos si el código de invitación existe
+        Team team = teamRepository.findByInvitationCode(request.getInvitationCode())
+                .orElseThrow(() -> new RuntimeException("Código de invitación inválido o equipo no encontrado"));
+
+        // 2. Fichamos al entrenador y lo vestimos con la equipación de su nuevo Club
+        var coach = User.builder()
+                .name(request.getName())
+                .surname(request.getSurname())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .dni(request.getDni())
+                .telephone(request.getTelephone())
+                .birthday(request.getBirthday())
+                .role(Role.COACH)
+                .club(team.getClub())
+                .build();
+
+        userRepository.save(coach);
+
+        // 3. Le damos las llaves del estadio (Token)
+        var jwtToken = jwtService.generateToken(coach.getUsername());
+        return new AuthResponseDto(jwtToken);
     }
 
     public AuthResponseDto authenticate(AuthRequestDto request) {

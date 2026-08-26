@@ -34,4 +34,8 @@ public class Player {
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User userAccount;
+
 }

@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -37,13 +39,9 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Desactivamos CSRF porque usamos tokens JWT, no cookies
                 .authorizeHttpRequests(auth -> auth
-                        // Dejamos libres las puertas de login/registro y la web de Swagger para probar
+
                         .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/teams/**", "/api/players/**", "/api/trainings/**").hasAnyAuthority("ADMIN", "COACH")
-                        .requestMatchers(HttpMethod.PUT, "/api/teams/**", "/api/players/**", "/api/trainings/**").hasAnyAuthority("ADMIN", "COACH")
-                        .requestMatchers(HttpMethod.DELETE, "/api/teams/**", "/api/players/**", "/api/trainings/**").hasAnyAuthority("ADMIN", "COACH")
-                        .requestMatchers(HttpMethod.GET, "/api/teams/**", "/api/players/**", "/api/trainings/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 // Le decimos que no guarde sesiones, cada petición debe traer su token

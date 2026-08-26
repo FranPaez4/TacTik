@@ -2,28 +2,50 @@ package com.tactik.tactik_api.service;
 
 import com.tactik.tactik_api.dto.TeamResponseDto;
 import com.tactik.tactik_api.model.Team;
+import com.tactik.tactik_api.model.User;
 import com.tactik.tactik_api.repository.TeamRepository;
 import com.tactik.tactik_api.dto.TeamRequestDto;
+import com.tactik.tactik_api.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 public class TeamService {
 
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
 
-    public TeamService(TeamRepository teamRepository) {
+    public TeamService(TeamRepository teamRepository, UserRepository userRepository) {
         this.teamRepository = teamRepository;
+        this.userRepository = userRepository;
     }
 
     public TeamResponseDto createTeam(TeamRequestDto request) {
+
+        String email = Objects.requireNonNull(SecurityContextHolder
+                .getContext().getAuthentication()).getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (user.getClub() == null) {
+            throw new RuntimeException("El usuario no pertenece a ningún club");
+        }
+
         Team team = new Team();
         team.setName(request.name());
         team.setCategory(request.category());
         team.setSeason(request.season());
         team.setCoachName(request.coachName());
+
+        team.setClub(user.getClub());
+
+        String invitationCode = java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        team.setInvitationCode(invitationCode);
 
 
         Team savedTeam = teamRepository.save(team);
@@ -34,7 +56,8 @@ public class TeamService {
                 savedTeam.getName(),
                 savedTeam.getCategory(),
                 savedTeam.getSeason(),
-                savedTeam.getCoachName()
+                savedTeam.getCoachName(),
+                savedTeam.getInvitationCode()
         );
     }
 
@@ -46,7 +69,8 @@ public class TeamService {
                         team.getName(),
                         team.getCategory(),
                         team.getSeason(),
-                        team.getCoachName()
+                        team.getCoachName(),
+                        team.getInvitationCode()
                 ))
                 .collect(Collectors.toList());
     }
@@ -72,7 +96,8 @@ public class TeamService {
                 updatedTeam.getName(),
                 updatedTeam.getCategory(),
                 updatedTeam.getSeason(),
-                updatedTeam.getCoachName()
+                updatedTeam.getCoachName(),
+                updatedTeam.getInvitationCode()
         );
     }
 

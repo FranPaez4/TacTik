@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api/axio';
+import logoTactik from './assets/logo.png';
+import bgCesped from './assets/bg-cesped.jpg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -32,10 +34,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: `url(${bgCesped})` }}
+    >
+      {/* Capa oscura semitransparente */}
+      <div className="absolute inset-0 bg-slate-900/80"></div>
+
+      {/* Caja blanca del formulario (le añadimos relative y z-10) */}
+      <div className="relative z-10 bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-emerald-600 mb-2">⚽ TacTik</h1>
+          <h1 className="text-4xl font-bold text-emerald-600 mb-2"><img src={logoTactik} alt="TacTik Logo" className="w-55 h-auto mx-auto mb-4" /></h1>
           <p className="text-slate-500">Inicia sesión en tu pizarra táctica</p>
         </div>
 
