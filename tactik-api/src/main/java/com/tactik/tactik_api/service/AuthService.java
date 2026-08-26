@@ -10,10 +10,12 @@ import com.tactik.tactik_api.model.User;
 import com.tactik.tactik_api.repository.TeamRepository;
 import com.tactik.tactik_api.repository.UserRepository;
 import com.tactik.tactik_api.security.JwtService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -57,7 +59,7 @@ public AuthResponseDto register(RegisterRequestDto request) {
     public AuthResponseDto registerCoach(CoachRegisterRequestDto request) {
         // 1. Comprobamos si el código de invitación existe
         Team team = teamRepository.findByInvitationCode(request.getInvitationCode())
-                .orElseThrow(() -> new RuntimeException("Código de invitación inválido o equipo no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Código de invitación inválido o equipo no encontrado"));
 
         // 2. Fichamos al entrenador y lo vestimos con la equipación de su nuevo Club
         var coach = User.builder()
