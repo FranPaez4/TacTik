@@ -27,9 +27,18 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    @PostMapping("/register-coach")
+    public ResponseEntity<AuthResponseDto> registerCoach(
+            @RequestBody com.tactik.tactik_api.dto.CoachRegisterRequestDto request
+    ) {
+        return ResponseEntity.ok(authService.registerCoach(request));
+    }
+
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponseDto> authenticate( @Valid @RequestBody AuthRequestDto request) {
         // Recibe el JSON del frontend y se lo pasa al metodo authenticate
         return ResponseEntity.ok(authService.authenticate(request));
     }
+
+
 }
