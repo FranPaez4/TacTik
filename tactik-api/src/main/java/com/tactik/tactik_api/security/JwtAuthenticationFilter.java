@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 6. Validamos que la pulsera no sea falsa ni esté caducada
             if (jwtService.isTokenValid(jwt, userDetails)) {
 
-                //7 Todo correcto - Creamos un objeto de autenticación y lo metemos en el contexto de Spring Security
+                //7 . Creamos un token de autenticación para Spring Security y lo ponemos en el contexto de seguridad
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -73,5 +73,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 8. Que pase el siguiente en la cola
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+
+        // Dejamos pasar sin pedir token a las rutas de autenticación (login, register, etc.)
+        return path.startsWith("/api/auth/");
     }
 }

@@ -24,5 +24,6 @@ public class RegisterRequestDto {
     private String clubName;
     private String city;
     private String colors;
+    private String badgeUrl;
 
 }

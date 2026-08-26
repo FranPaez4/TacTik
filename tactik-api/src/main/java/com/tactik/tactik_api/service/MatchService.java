@@ -174,7 +174,7 @@ public class MatchService {
         // 1. Limpiamos los eventos anteriores por si el entrenador corrige el acta
         match.getEvents().clear();
 
-        // 2. Registramos todo lo que ha pasado en el partido
+        // 2. Registramos los nuevos eventos minuto a minuto
         for (MatchEventRequestDto dto : eventsList) {
             MatchEvent event = new MatchEvent();
             event.setMatch(match);

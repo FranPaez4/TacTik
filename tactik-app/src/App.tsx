@@ -3,6 +3,8 @@ import Home from './Home';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import Register from './Register';
+import RegisterCoach from './RegisterCoach';
+import RegisterPlayer from './RegisterPlayer';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path= "/register" element={<Register />} />
+        <Route path= "/register-coach" element={<RegisterCoach />} />
+        <Route path= "/register-player" element={<RegisterPlayer />} />
       </Routes>
     </BrowserRouter>
   );

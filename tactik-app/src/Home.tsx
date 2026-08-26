@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Shield, Clipboard, X, User } from 'lucide-react';
 import bgCesped from './assets/bg-cesped.jpg'; 
 import logoTactik from './assets/logo.png';
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div 
       className="min-h-screen flex flex-col justify-center items-center text-center bg-cover bg-center relative"
@@ -39,15 +42,81 @@ export default function Home() {
             Iniciar Sesión
           </Link>
           
-          <Link 
-            to="/register" 
+          <button 
+            onClick={() => setIsModalOpen(true)} 
             className="w-full sm:w-auto bg-transparent hover:bg-white/10 text-white font-bold py-4 px-10 rounded-full transition-all border-2 border-slate-400 hover:border-white text-lg backdrop-blur-sm"
           >
             Registrarse
-          </Link>
+          </button>
         </div>
-
       </div>
+      {/* VENTANA EMERGENTE (MODAL) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl text-left relative">
+            
+            {/* Botón de cerrar (X) */}
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-bold"
+            >
+              <X className="w-6 h-6" />
+              &times;
+            </button>
+
+            <h3 className="text-2xl font-bold text-white mb-2">Únete a TacTik</h3>
+            <p className="text-slate-400 text-sm mb-6">Selecciona cómo deseas registrarte en la plataforma:</p>
+
+            {/* Opciones del Modal */}
+            <div className="flex flex-col gap-4">
+              <Link 
+                to="/register" 
+                className="p-4 rounded-xl bg-slate-800 hover:bg-emerald-600/20 border border-slate-700 hover:border-emerald-500 transition-all group"
+              >
+                <div className="font-bold text-white group-hover:text-emerald-400 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-emerald-400" />
+                   Fundar un Club
+                </div>
+                <div className="text-xs text-slate-400 mt-1">Crea tu entidad, define colores y gestiona la directiva.</div>
+              </Link>
+
+              <Link 
+                to="/register-coach" 
+                className="p-4 rounded-xl bg-slate-800 hover:bg-emerald-600/20 border border-slate-700 hover:border-emerald-500 transition-all group"
+              >
+                <div className="font-bold text-white group-hover:text-emerald-400 flex items-center gap-2">
+                  <Clipboard className="w-5 h-5 text-emerald-400" />
+                   Tengo un Código de Entrenador
+                </div>
+                <div className="text-xs text-slate-400 mt-1">Únete a un club existente usando la llave del equipo.</div>
+              </Link>
+
+              <Link 
+                to="/register-player" 
+                className="p-4 rounded-xl bg-slate-800 hover:bg-emerald-600/20 border border-slate-700 hover:border-emerald-500 transition-all group"
+              >
+                <div className="font-bold text-white group-hover:text-emerald-400 flex items-center gap-2">
+                  <User className="w-5 h-5 text-emerald-400" />
+                   Tengo un Código de Jugador
+                </div>
+                <div className="text-xs text-slate-400 mt-1">Accede como jugador o familiar con tu código asignado.</div>
+              </Link>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-xs text-slate-500 hover:text-slate-300 underline"
+              >
+                Cancelar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
+    
   );
+
 }
