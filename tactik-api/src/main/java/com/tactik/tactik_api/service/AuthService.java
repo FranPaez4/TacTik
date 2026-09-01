@@ -4,11 +4,9 @@ import com.tactik.tactik_api.dto.AuthRequestDto;
 import com.tactik.tactik_api.dto.AuthResponseDto;
 import com.tactik.tactik_api.dto.CoachRegisterRequestDto;
 import com.tactik.tactik_api.dto.RegisterRequestDto;
-import com.tactik.tactik_api.model.Club;
-import com.tactik.tactik_api.model.Role;
-import com.tactik.tactik_api.model.Team;
-import com.tactik.tactik_api.model.User;
+import com.tactik.tactik_api.model.*;
 import com.tactik.tactik_api.repository.ClubRepository;
+import com.tactik.tactik_api.repository.RevokedTokenRepository;
 import com.tactik.tactik_api.repository.TeamRepository;
 import com.tactik.tactik_api.repository.UserRepository;
 import com.tactik.tactik_api.security.JwtService;
@@ -28,14 +26,16 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final TeamRepository teamRepository;
     private final ClubRepository clubRepository;
+    private final RevokedTokenRepository revokedTokenRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository, ClubRepository clubRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository, ClubRepository clubRepository, RevokedTokenRepository revokedTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.teamRepository = teamRepository;
         this.clubRepository = clubRepository;
+        this.revokedTokenRepository = revokedTokenRepository;
     }
 
 public AuthResponseDto register(RegisterRequestDto request) {
@@ -118,6 +118,15 @@ public AuthResponseDto register(RegisterRequestDto request) {
         return AuthResponseDto.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    public void logout(String token) {
+        if (!revokedTokenRepository.existsByToken(token)) {
+            RevokedToken revokedToken = RevokedToken.builder()
+                    .token(token)
+                    .build();
+            revokedTokenRepository.save(revokedToken);
+        }
     }
 
 }

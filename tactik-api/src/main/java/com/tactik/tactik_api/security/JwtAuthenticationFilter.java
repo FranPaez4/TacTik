@@ -1,5 +1,6 @@
 package com.tactik.tactik_api.security;
 
+import com.tactik.tactik_api.repository.RevokedTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,10 +22,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final RevokedTokenRepository revokedTokenRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService, @Lazy UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, @Lazy UserDetailsService userDetailsService, RevokedTokenRepository revokedTokenRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.revokedTokenRepository = revokedTokenRepository;
     }
 
     @Override
@@ -48,6 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 3. Le quitamos los primeros 7 caracteres ("Bearer ") para quedarnos solo con el token puro
         jwt = authHeader.substring(7);
+        if (revokedTokenRepository.existsByToken(jwt)) {
+            filterChain.doFilter(request, response);
+            return; // El token está revocado, detenemos la ejecución
+        }
         // 4. Usamos tu escáner (JwtService) para sacar el email del token
         userEmail = jwtService.extractUsername(jwt);
 

@@ -1,26 +1,96 @@
+import LogoutButton from "./components/LogoutButton";
+import { useState, useEffect } from 'react';
+import api from './api/axio'; 
+import ClubBadge from './components/ClubBadge';
+import EditClub from "./components/EditClub";
+import Match from "./Match";
+import Training from "./Training";
+import Team from "./Team";
+
+interface UserProfile {
+  name: string;
+  role: string;
+  clubName: string;
+  badgeUrl: string;
+  colors: string;
+}
+
 export default function Dashboard() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'team' | 'match' | 'training'>('dashboard');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/users/me'); 
+        setProfile(response.data);
+      } catch (error) {
+        console.error("Error al cargar el perfil", error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   return (
     <div className="flex flex-col md:flex-row h-screen bg-slate-50 font-sans">
       
       {/* Menú Lateral (PC y Tablets grandes) */}
       <aside className="hidden md:flex w-64 bg-slate-900 text-white flex-col">
-        <div className="p-6 text-2xl font-bold tracking-wider text-emerald-400">
-          ⚽ TacTik
+        <div className="p-6 text-xl font-semibold border-b border-slate-700">
+          <ClubBadge 
+            badgeUrl={profile?.badgeUrl} 
+            clubName={profile?.clubName} 
+            size="md" 
+          />
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
-          <a href="#" className="block py-2.5 px-4 bg-emerald-600 rounded-lg font-semibold">📊 Panel Principal</a>
-          <a href="#" className="block py-2.5 px-4 hover:bg-slate-800 rounded-lg transition">🛡️ Mi Equipo</a>
-          <a href="#" className="block py-2.5 px-4 hover:bg-slate-800 rounded-lg transition">📅 Partidos</a>
-          <a href="#" className="block py-2.5 px-4 hover:bg-slate-800 rounded-lg transition">🏃‍♂️ Entrenamientos</a>
+          <button 
+            onClick={() => setCurrentView('dashboard')} 
+            className={`w-full text-left block py-2.5 px-4 rounded-lg font-semibold transition ${currentView === 'dashboard' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+          >
+            📊 Panel Principal
+          </button>
+          
+          <button 
+            onClick={() => setCurrentView('team')} 
+            className={`w-full text-left block py-2.5 px-4 rounded-lg font-semibold transition ${currentView === 'team' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+          >
+            🛡️ Mi Equipo
+          </button>
+          
+          <button 
+            onClick={() => setCurrentView('match')} 
+            className={`w-full text-left block py-2.5 px-4 rounded-lg font-semibold transition ${currentView === 'match' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+          >
+            📅 Partidos
+          </button>
+          
+          <button 
+            onClick={() => setCurrentView('training')} 
+            className={`w-full text-left block py-2.5 px-4 rounded-lg font-semibold transition ${currentView === 'training' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+          >
+            🏃‍♂️ Entrenamientos
+          </button>
         </nav>
+        <div className="mt-auto p-4 border-t border-slate-700">
+          <LogoutButton />
+        </div>
       </aside>
 
       {/* Contenido Principal */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto pb-24 md:pb-10">
+        {currentView === 'dashboard' && (
+         <>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">¡Hola, Míster!</h1>
+          <h1 className="text-3xl font-bold text-slate-800">
+            ¡Hola, {profile?.name || 'Míster'}!
+          </h1>
           <p className="text-slate-500 mt-1">Tu pizarra táctica está lista para la jornada.</p>
         </header>
+
+        <div className="mb-8">
+              <EditClub />
+            </div>
 
         {/* Grid de Tarjetas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -49,6 +119,23 @@ export default function Dashboard() {
           </div>
 
         </div>
+        </>
+        )}
+        {currentView === 'match' && (
+          <div className="mt-10">
+            <Match />
+          </div>
+        )}
+        {currentView === 'team' && (
+          <div className="mt-10">
+            <Team />
+          </div>
+        )}
+        {currentView === 'training' && (
+          <div className="mt-10">
+            <Training />
+          </div>
+        )}
       </main>
 
       {/* Barra de Navegación Inferior (SOLO MÓVIL) */}
