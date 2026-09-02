@@ -45,8 +45,7 @@ export default function Register() {
 
     setUploadingImage(true);
     try {
-      // Reemplaza 'tu_cloud_name' por tu nombre de Cloudinary real
-      const res = await fetch('https://api.cloudinary.com/v1_1/tu_cloud_name/image/upload', {
+      const res = await fetch('https://api.cloudinary.com/v1_1/yn4ywjgz/image/upload', {
         method: 'POST',
         body: data
       });

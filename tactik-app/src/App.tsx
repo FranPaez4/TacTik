@@ -5,6 +5,7 @@ import Dashboard from './Dashboard';
 import Register from './Register';
 import RegisterCoach from './RegisterCoach';
 import RegisterPlayer from './RegisterPlayer';
+import Partidos from './Match';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path= "/register" element={<Register />} />
         <Route path= "/register-coach" element={<RegisterCoach />} />
         <Route path= "/register-player" element={<RegisterPlayer />} />
+        <Route path="/Match" element={<Partidos />} />
       </Routes>
     </BrowserRouter>
   );

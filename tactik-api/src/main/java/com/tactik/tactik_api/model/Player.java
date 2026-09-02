@@ -30,6 +30,12 @@ public class Player {
     @Column(unique = true)
     private String familyInviteCode;
 
+    @Enumerated(EnumType.STRING)
+    private PlayerStatus status;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;

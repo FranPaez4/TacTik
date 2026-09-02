@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -37,6 +38,14 @@ public class PlayerController {
         return ResponseEntity.ok(players);
     }
 
+    @PreAuthorize("hasAuthority('COACH')")
+    @GetMapping("/my-team")
+    public ResponseEntity<List<PlayerResponseDto>> getMyTeamPlayers(Principal principal) {
+        // principal.getName() contiene el email del usuario logueado (sacado del Token)
+        List<PlayerResponseDto> players = playerService.getPlayersByCoachEmail(principal.getName());
+        return ResponseEntity.ok(players);
+    }
+
     // GET: Obtener jugadores por nombre
 
     @GetMapping("/search")
@@ -44,6 +53,8 @@ public class PlayerController {
         List<PlayerResponseDto> players = playerService.searchPlayersByName(name);
         return ResponseEntity.ok(players);
     }
+
+
 
     // 3. DELETE: Eliminar a un jugador de la base de datos
     @PreAuthorize("hasAnyAuthority('ADMIN', 'COACH')")

@@ -45,6 +45,10 @@ public class User implements UserDetails {
     @JoinColumn(name = "club_id")
     private Club club;
 
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
+
     //  MÉTODOS DE SPRING SECURITY
 
     @Override
