@@ -2,6 +2,7 @@ package com.tactik.tactik_api.controller;
 
 import com.tactik.tactik_api.dto.AuthRequestDto;
 import com.tactik.tactik_api.dto.AuthResponseDto;
+import com.tactik.tactik_api.dto.PlayerRegisterRequestDto;
 import com.tactik.tactik_api.dto.RegisterRequestDto;
 import com.tactik.tactik_api.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +52,13 @@ public class AuthController {
             return ResponseEntity.ok("Sesión cerrada de forma segura");
         }
         return ResponseEntity.badRequest().body("No se encontró ningún token para revocar");
+    }
+
+    @PostMapping("/register-player")
+    public ResponseEntity<AuthResponseDto> registerPlayer(
+            @RequestBody PlayerRegisterRequestDto request
+    ) {
+        return ResponseEntity.ok(authService.registerPlayer(request));
     }
 
 

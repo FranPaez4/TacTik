@@ -1,5 +1,6 @@
 package com.tactik.tactik_api.dto;
 
+import com.tactik.tactik_api.model.PlayerStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,5 @@ public class PlayerRequestDto {
    private String lastName;
    private Integer dorsalNumber;
    private String position;
-   private LocalDate birthDate;
-   private Long teamId;
+   private PlayerStatus status;
 }

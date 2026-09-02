@@ -1,14 +1,8 @@
 package com.tactik.tactik_api.service;
 
-import com.tactik.tactik_api.dto.AuthRequestDto;
-import com.tactik.tactik_api.dto.AuthResponseDto;
-import com.tactik.tactik_api.dto.CoachRegisterRequestDto;
-import com.tactik.tactik_api.dto.RegisterRequestDto;
+import com.tactik.tactik_api.dto.*;
 import com.tactik.tactik_api.model.*;
-import com.tactik.tactik_api.repository.ClubRepository;
-import com.tactik.tactik_api.repository.RevokedTokenRepository;
-import com.tactik.tactik_api.repository.TeamRepository;
-import com.tactik.tactik_api.repository.UserRepository;
+import com.tactik.tactik_api.repository.*;
 import com.tactik.tactik_api.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,8 +21,9 @@ public class AuthService {
     private final TeamRepository teamRepository;
     private final ClubRepository clubRepository;
     private final RevokedTokenRepository revokedTokenRepository;
+    private final PlayerRepository playerRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository, ClubRepository clubRepository, RevokedTokenRepository revokedTokenRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, TeamRepository teamRepository, ClubRepository clubRepository, RevokedTokenRepository revokedTokenRepository, PlayerRepository playerRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -36,6 +31,7 @@ public class AuthService {
         this.teamRepository = teamRepository;
         this.clubRepository = clubRepository;
         this.revokedTokenRepository = revokedTokenRepository;
+        this.playerRepository = playerRepository;
     }
 
 public AuthResponseDto register(RegisterRequestDto request) {
@@ -96,6 +92,59 @@ public AuthResponseDto register(RegisterRequestDto request) {
         // 3. Le damos las llaves del estadio (Token)
         var jwtToken = jwtService.generateToken(coach.getUsername());
         return new AuthResponseDto(jwtToken);
+    }
+
+    public AuthResponseDto registerPlayer(PlayerRegisterRequestDto request) {
+        // 1. Validar si el email o DNI ya existen (añade tus validaciones habituales aquí)
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("El email ya está registrado");
+        }
+
+        // 2. Buscar la ficha deportiva usando el código TAC-XXXX
+        Player player = playerRepository.findByFamilyInviteCode(request.getInvitationCode())
+                .orElseThrow(() -> new RuntimeException("Código de invitación inválido o no encontrado"));
+
+        // OPCIONAL: Comprobar si esa ficha ya tiene un usuario vinculado para evitar dobles registros
+        if (player.getUserAccount() != null) {
+            throw new RuntimeException("Esta ficha ya está vinculada a una cuenta de usuario.");
+        }
+
+        // 3. Crear la cuenta de usuario (User)
+        User user = User.builder()
+                .name(request.getName())
+                .surname(request.getSurname())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .dni(request.getDni())
+                .telephone(request.getTelephone())
+                .birthday(request.getBirthday())
+                .role(Role.PLAYER) // Asignamos el rol de jugador
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        // 4. Vincular el usuario a la ficha deportiva y actualizar la fecha de nacimiento
+        player.setUserAccount(savedUser);
+
+        // Aquí es donde recuperamos el cumpleaños que borramos en el alta del entrenador
+        if (request.getBirthday() != null) {
+            player.setBirthDate(request.getBirthday());
+        }
+
+        if (request.getPhotoUrl() != null && !request.getPhotoUrl().isEmpty()) {
+            player.setPhotoUrl(request.getPhotoUrl());
+        } else {
+            // Foto por defecto si no suben ninguna (puedes poner la ruta a un avatar gris genérico)
+            player.setPhotoUrl("https://ui-avatars.com/api/?name=" + request.getName() + "+" + request.getSurname() + "&background=random");
+        }
+
+        playerRepository.save(player);
+
+        // 5. Generar y devolver el token JWT
+        String jwtToken = jwtService.generateToken(savedUser.getEmail());
+        return AuthResponseDto.builder()
+                .token(jwtToken)
+                .build();
     }
 
     public AuthResponseDto authenticate(AuthRequestDto request) {

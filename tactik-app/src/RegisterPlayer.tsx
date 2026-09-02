@@ -15,18 +15,48 @@ export default function RegisterPlayer() {
     telephone: '',
     email: '',
     password: '',
-    role: 'PLAYER' // Por defecto
+    role: 'PLAYER', // Por defecto
+    photoUrl: '' // Campo opcional para la URL de la foto del jugador
   });
   
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errores, setErrores] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const data = new FormData();
+    data.append('file', file);
+    data.append('upload_preset', 'tactik_preset'); 
+
+    setIsUploading(true); 
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/ymtyujgc/image/upload', {
+        method: 'POST',
+        body: data
+      });
+      
+      const fileUploaded = await res.json();
+      
+      // LA ÚNICA DIFERENCIA: Aquí guardamos en photoUrl en lugar de badgeUrl
+      setFormData(prev => ({ ...prev, photoUrl: fileUploaded.secure_url }));
+      
+    } catch (err) {
+      console.error("Error subiendo la imagen", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,6 +133,33 @@ export default function RegisterPlayer() {
                  <User className="w-5 h-5 text-emerald-600" />
                Datos de Acceso
             </h3>
+            {/* ================= SECCIÓN: FOTO DE PERFIL ================= */}
+            <div className="flex flex-col items-center mb-6 pt-2">
+              <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-slate-200 overflow-hidden mb-3 flex items-center justify-center shadow-inner">
+                {formData.photoUrl ? (
+                  <img 
+                    src={formData.photoUrl} 
+                    alt="Vista previa" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <svg className="w-10 h-10 text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )}
+              </div>
+              
+              <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+                {isUploading ? 'Subiendo imagen...' : 'Subir foto de perfil'}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={handleImageUpload} 
+                  disabled={isUploading}
+                />
+              </label>
+            </div>
             
             <div className="space-y-4">
               
@@ -177,7 +234,7 @@ export default function RegisterPlayer() {
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-700 transition duration-300 mt-6 shadow-lg shadow-emerald-600/30">
+          <button type="submit" disabled={isUploading} className="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-700 transition duration-300 mt-6 shadow-lg shadow-emerald-600/30">
             Completar Fichaje
           </button>
         </form>
