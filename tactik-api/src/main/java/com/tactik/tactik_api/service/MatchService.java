@@ -5,6 +5,7 @@ import com.tactik.tactik_api.model.*;
 import com.tactik.tactik_api.repository.MatchRepository;
 import com.tactik.tactik_api.repository.PlayerRepository;
 import com.tactik.tactik_api.repository.TeamRepository;
+import com.tactik.tactik_api.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,18 +18,27 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
+    private final UserRepository userRepository;
 
-    public MatchService(MatchRepository matchRepository, TeamRepository teamRepository, PlayerRepository playerRepository) {
+    public MatchService(MatchRepository matchRepository, TeamRepository teamRepository, PlayerRepository playerRepository, UserRepository userRepository) {
         this.matchRepository = matchRepository;
         this.teamRepository = teamRepository;
         this.playerRepository = playerRepository;
+        this.userRepository = userRepository;
     }
 
     // --- 1. CREAR PARTIDO (Previa de la semana) ---
     @Transactional
-    public MatchResponseDto createMatch(MatchRequestDto requestDto) {
-        Team team = teamRepository.findById(requestDto.getTeamId())
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado con el ID: " + requestDto.getTeamId()));
+    public MatchResponseDto createMatch(MatchRequestDto requestDto, String coachEmail) {
+        // 1. Buscamos al entrenador por su email
+        User coach = userRepository.findByEmail(coachEmail)
+                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado con email: " + coachEmail));
+
+        // 2. Comprobamos que el entrenador tenga un equipo asignado
+        if (coach.getTeam() == null) {
+            throw new RuntimeException("El entrenador no tiene un equipo asignado");
+        }
+        Team team = coach.getTeam(); // Sacamos el equipo directamente del entrenador
 
         Match match = new Match();
         match.setDateTime(requestDto.getDateTime());
@@ -38,10 +48,9 @@ public class MatchService {
         match.setDurationMinutes(requestDto.getDurationMinutes());
         match.setMatchType(requestDto.getMatchType());
 
-        // Al crear el partido, el marcador siempre empieza 0-0
         match.setOurGoals(0);
         match.setOpponentGoals(0);
-        match.setTeam(team);
+        match.setTeam(team); // Le asignamos el equipo automáticamente
 
         Match savedMatch = matchRepository.save(match);
         return mapToResponseDto(savedMatch);
@@ -199,5 +208,21 @@ public class MatchService {
         // 3. Guardamos el acta actualizada
         Match updatedMatch = matchRepository.save(match);
         return mapToResponseDto(updatedMatch);
+    }
+
+    public List<MatchResponseDto> getMatchesByCoachEmail(String email) {
+        User coach = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado"));
+
+        if (coach.getTeam() == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        // Asumo que tienes un findByTeamId en tu MatchRepository
+        List<Match> matches = matchRepository.findByTeamId(coach.getTeam().getId());
+
+        return matches.stream()
+                .map(this::mapToResponseDto) // O como se llame tu mapeador
+                .collect(java.util.stream.Collectors.toList());
     }
 }

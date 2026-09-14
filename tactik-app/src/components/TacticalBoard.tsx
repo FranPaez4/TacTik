@@ -1,6 +1,29 @@
 import { useState } from 'react';
 import pizarraCampo from '../assets/PizarraCampo.jpg';
 
+interface PlayerFromTeam {
+  id: number;
+  firstName: string;
+  lastName: string;
+  dorsalNumber?: number;
+  position?: string;
+}
+
+interface BoardPosition {
+  id: number;
+  label: string;
+  x: number;
+  y: number;
+  assignedPlayer?: PlayerFromTeam | null;
+}
+
+interface TacticalBoardProps {
+  selectedPlayer: PlayerFromTeam | null;
+  onPlayerAssigned: () => void;
+  teamPlayers: PlayerFromTeam[];
+  onMatchEvent: (type: 'GOAL' | 'YELLOW' | 'RED' | 'SUB', playerIn: PlayerFromTeam, playerOut?: PlayerFromTeam) => void;
+}
+
 // Definimos las posiciones base según la formación
 const formations: Record<string, { name: string; role: string; x: number; y: number }[]> = {
   '4-3-3': [
@@ -50,10 +73,12 @@ const tacticalFormations: Record<string, { name: string; pos: { id: number; labe
   }
 };
 
-export default function TacticalBoard() {
+export default function TacticalBoard({ selectedPlayer, onPlayerAssigned, teamPlayers, onMatchEvent }: TacticalBoardProps) {
   const [selectedFormation, setSelectedFormation] = useState<'4-4-2' | '4-3-3'>('4-4-2');
-  const [players, setPlayers] = useState(tacticalFormations['4-4-2'].pos);
+  const [players, setPlayers] = useState<BoardPosition[]>(tacticalFormations['4-4-2'].pos);
   const [activePlayer, setActivePlayer] = useState<number | null>(null);
+  const [activeMenuPositionId, setActiveMenuPositionId] = useState<number | null>(null);
+  const [subMenuView, setSubMenuView] = useState<'actions' | 'substitution' | null>(null);
 
   const handleFormationChange = (formation: '4-4-2' | '4-3-3') => {
     setSelectedFormation(formation);
@@ -71,6 +96,27 @@ export default function TacticalBoard() {
     setActivePlayer(null);
   };
 
+  const handlePositionClick = (positionId: number, assignedPlayer: PlayerFromTeam | null | undefined, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedPlayer) {
+      // Si tenemos un jugador seleccionado del banquillo, lo colocamos aquí
+      setPlayers(players.map(p => p.id === positionId ? { ...p, assignedPlayer: selectedPlayer } : p));
+      onPlayerAssigned();
+      setActiveMenuPositionId(null);
+    } else if (assignedPlayer) {
+      // Si ya hay un jugador en el campo, abrimos/cerramos su menú de acciones
+      if (activeMenuPositionId === positionId) {
+        setActiveMenuPositionId(null);
+        setSubMenuView(null);
+      } else {
+        setActiveMenuPositionId(positionId);
+        setSubMenuView('actions');
+      }
+    } else {
+      setActivePlayer(positionId);
+    }
+  };
+  
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-slate-100 font-sans">
       <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
@@ -92,13 +138,17 @@ export default function TacticalBoard() {
       </div>
 
       <p className="text-sm text-slate-500 mb-4">
-        {activePlayer !== null ? '📍 Haz clic en el césped para mover al jugador seleccionado.' : '💡 Haz clic en una ficha para reposicionarla en el campo.'}
+        {selectedPlayer 
+          ? `🎯 Haz clic en una posición del campo para colocar a ${selectedPlayer.firstName}.` 
+          : activePlayer !== null 
+            ? '📍 Haz clic en el césped para mover al jugador seleccionado.' 
+            : '💡 Selecciona un jugador en la plantilla y haz clic en el campo para alinearlo.'}
       </p>
 
       {/* Campo de Fútbol */}
       <div 
         onClick={handleBoardClick}
-        className="relative w-full h-[550px] rounded-xl overflow-hidden shadow-inner border-4 border-emerald-800 cursor-crosshair bg-cover bg-center"
+        className="relative w-full h-[550px] rounded-xl shadow-inner border-4 border-emerald-800 cursor-crosshair bg-cover bg-center"
         style={{ backgroundImage: `url(${pizarraCampo})` }}
       >
         {/* Líneas del campo (Marcas tácticas con Tailwind) */}
@@ -117,15 +167,89 @@ export default function TacticalBoard() {
         {players.map(player => (
           <div
             key={player.id}
-            onClick={(e) => { e.stopPropagation(); setActivePlayer(player.id); }}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow-lg transition-transform cursor-pointer ${
+            onClick={(e) => handlePositionClick(player.id, player.assignedPlayer, e)}
+            className={`absolute -translate-x-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full flex items-center gap-1.5 font-bold text-xs shadow-lg transition-transform cursor-pointer ${
               activePlayer === player.id 
                 ? 'bg-amber-400 text-slate-900 scale-125 ring-4 ring-white animate-pulse' 
-                : 'bg-emerald-600 text-white border-2 border-white hover:scale-110'
+                : player.assignedPlayer
+                  ? 'bg-emerald-700 text-white border-2 border-white hover:scale-110'
+                  : 'bg-emerald-600 text-white border-2 border-white/80 hover:scale-110'
             }`}
             style={{ left: `${player.x}%`, top: `${player.y}%` }}
           >
-            {player.label}
+            <span className="bg-white/20 px-1 rounded text-[10px]">{player.label}</span>
+            <span>{player.assignedPlayer?.firstName || ''}</span>
+
+            {/* MENÚ FLOTANTE AL PULSAR AL JUGADOR EN EL CAMPO */}
+            {activeMenuPositionId === player.id && player.assignedPlayer && (
+              <div className={`absolute left-1/2 -translate-x-1/2 w-56 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-200 p-2 z-50 ${
+                               player.y > 60 ? 'bottom-full mb-2' : 'top-full mt-2'
+                              }`}>
+                
+                {subMenuView === 'actions' && (
+                  <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-xs font-bold text-slate-400 px-2 py-1 border-b border-slate-100">
+                      Acción: {player.assignedPlayer.firstName}
+                    </div>
+                    <button 
+                      onClick={() => { onMatchEvent('GOAL', player.assignedPlayer!); setActiveMenuPositionId(null); }}
+                      className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg flex items-center gap-2"
+                    >
+                      <span>⚽</span> Registrar Gol
+                    </button>
+                    <button 
+                      onClick={() => setSubMenuView('substitution')}
+                      className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-2"
+                    >
+                      <span>🔄</span> Hacer Cambio
+                    </button>
+                    <button 
+                      onClick={() => { onMatchEvent('YELLOW', player.assignedPlayer!); setActiveMenuPositionId(null); }}
+                      className="w-full text-left px-3 py-2 text-sm font-semibold text-yellow-700 hover:bg-yellow-50 rounded-lg flex items-center gap-2"
+                    >
+                      <span>🟨</span> Tarjeta Amarilla
+                    </button>
+                    <button 
+                      onClick={() => { onMatchEvent('RED', player.assignedPlayer!); setActiveMenuPositionId(null); }}
+                      className="w-full text-left px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 rounded-lg flex items-center gap-2"
+                    >
+                      <span>🟥</span> Tarjeta Roja
+                    </button>
+                  </div>
+                )}
+
+                {subMenuView === 'substitution' && (
+                  <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-xs font-bold text-blue-600 px-2 py-1 border-b border-slate-100 flex justify-between items-center">
+                      <span>Entra por {player.assignedPlayer.firstName}</span>
+                      <button onClick={() => setSubMenuView('actions')} className="text-slate-400 hover:text-slate-600">&larr; Volver</button>
+                    </div>
+                    <div className="max-h-40 overflow-y-auto space-y-1">
+                      {teamPlayers
+                        .filter(p => p.id !== player.assignedPlayer?.id)
+                        .map(sub => (
+                          <button 
+                            key={sub.id}
+                            onClick={() => {
+                              // CAMBIO REAL EN EL CAMPO: Reemplazamos el jugador en esta posición
+                              setPlayers(players.map(p => p.id === player.id ? { ...p, assignedPlayer: sub } : p));
+                              onMatchEvent('SUB', sub, player.assignedPlayer!);
+                              setActiveMenuPositionId(null);
+                              setSubMenuView(null);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded flex justify-between items-center"
+                          >
+                            <span>#{sub.dorsalNumber || '-'} {sub.firstName}</span>
+                            <span className="text-emerald-600 font-bold">Meter</span>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )}
+
           </div>
         ))}
       </div>
