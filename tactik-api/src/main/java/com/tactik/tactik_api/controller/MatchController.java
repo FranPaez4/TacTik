@@ -1,9 +1,6 @@
 package com.tactik.tactik_api.controller;
 
-import com.tactik.tactik_api.dto.MatchEventRequestDto;
-import com.tactik.tactik_api.dto.MatchPlayerRequestDto;
-import com.tactik.tactik_api.dto.MatchRequestDto;
-import com.tactik.tactik_api.dto.MatchResponseDto;
+import com.tactik.tactik_api.dto.*;
 import com.tactik.tactik_api.service.MatchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +25,16 @@ public class MatchController {
     @PostMapping
     public ResponseEntity<MatchResponseDto> createMatch(@RequestBody MatchRequestDto requestDto, Principal principal) {
         return new ResponseEntity<>(matchService.createMatch(requestDto, principal.getName()), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{matchId}/finish")
+    public ResponseEntity<?> finishMatch(
+            @PathVariable Long matchId,
+            @RequestBody MatchFinishRequestDto request) {
+
+        matchService.finishMatch(matchId, request);
+
+        return ResponseEntity.ok().build();
     }
 
     // 2. Ver un partido por su ID

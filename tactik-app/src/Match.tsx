@@ -39,6 +39,8 @@ export default function Partidos() {
   const [isMatchActive, setIsMatchActive] = useState(false);
   const [matchStatus, setMatchStatus] = useState<'playing' | 'paused' | 'finished'>('playing');
   const [matchEvents, setMatchEvents] = useState<MatchEvent[]>([]);
+  const [myTeamScore, setMyTeamScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState(0);
   
   // Estados de la plantilla
   const [teamPlayers, setTeamPlayers] = useState<Player[]>([]);
@@ -94,7 +96,10 @@ export default function Partidos() {
     const currentMinute = Math.floor(matchTime / 60); // Coge el minuto real del cronómetro
     
     let message = '';
-    if (type === 'GOAL') message = `¡Gol de ${mainPlayer.firstName}!`;
+    if (type === 'GOAL'){
+      message = `¡Gol de ${mainPlayer.firstName}!`;
+      setMyTeamScore(prev => prev + 1); // <-- ¡AQUÍ SUMAMOS TU GOL!
+    } 
     if (type === 'YELLOW') message = `Tarjeta amarilla para ${mainPlayer.firstName}`;
     if (type === 'RED') message = `Tarjeta roja para ${mainPlayer.firstName}`;
     if (type === 'SUB') message = `Entra ${mainPlayer.firstName} por ${subPlayer?.firstName}`;
@@ -142,9 +147,48 @@ export default function Partidos() {
                 {selectedMatch.isHome ? 'LOCAL' : 'VISITANTE'}
               </span>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              UD Alameda vs {selectedMatch.opponent}
-            </h2>
+            <div className="flex flex-wrap items-center gap-4 my-2">
+              <div className="flex items-center gap-3 text-2xl font-bold text-slate-800">
+                {/* Nombre Equipo Local */}
+                <span className={selectedMatch.isHome ? '' : 'text-slate-500'}>
+                  {selectedMatch.isHome ? 'UD Alameda' : selectedMatch.opponent}
+                </span>
+                
+                {/* Caja del Marcador */}
+                <div className="flex items-center bg-slate-100 rounded-lg px-4 py-1 border border-slate-200">
+                  <span className="text-3xl text-emerald-600 font-black w-8 text-center">
+                    {selectedMatch.isHome ? myTeamScore : opponentScore}
+                  </span>
+                  <span className="text-slate-400 mx-2">-</span>
+                  <span className="text-3xl text-emerald-600 font-black w-8 text-center">
+                    {selectedMatch.isHome ? opponentScore : myTeamScore}
+                  </span>
+                </div>
+
+                {/* Nombre Equipo Visitante */}
+                <span className={!selectedMatch.isHome ? '' : 'text-slate-500'}>
+                  {selectedMatch.isHome ? selectedMatch.opponent : 'UD Alameda'}
+                </span>
+              </div>
+              
+              {/* Botón rápido para registrar gol del rival */}
+              {matchStatus !== 'finished' && (
+                <button 
+                  onClick={() => {
+                    setOpponentScore(prev => prev + 1);
+                    setMatchEvents(prev => [{ 
+                      id: Date.now(), 
+                      minute: Math.floor(matchTime / 60), 
+                      type: 'GOAL', 
+                      message: `Gol de ${selectedMatch.opponent}` 
+                    }, ...prev]);
+                  }}
+                  className="text-xs bg-red-50 text-red-600 border border-red-200 px-2 py-1.5 rounded hover:bg-red-100 transition shadow-sm font-semibold flex items-center gap-1"
+                >
+                  ⚽ + Gol Rival
+                </button>
+              )}
+            </div>
             <p className="text-slate-500 mt-1 font-medium">
               {new Date(selectedMatch.dateTime).toLocaleString()} | {selectedMatch.localisation}
             </p>
