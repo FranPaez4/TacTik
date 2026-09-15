@@ -1,15 +1,13 @@
 package com.tactik.tactik_api.controller;
 
-import com.tactik.tactik_api.dto.MatchEventRequestDto;
-import com.tactik.tactik_api.dto.MatchPlayerRequestDto;
-import com.tactik.tactik_api.dto.MatchRequestDto;
-import com.tactik.tactik_api.dto.MatchResponseDto;
+import com.tactik.tactik_api.dto.*;
 import com.tactik.tactik_api.service.MatchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -25,12 +23,22 @@ public class MatchController {
     // 1. Crear partido
     @PreAuthorize("hasAnyAuthority('ADMIN', 'COACH')")
     @PostMapping
-    public ResponseEntity<MatchResponseDto> createMatch(@RequestBody MatchRequestDto requestDto) {
-        return new ResponseEntity<>(matchService.createMatch(requestDto), HttpStatus.CREATED);
+    public ResponseEntity<MatchResponseDto> createMatch(@RequestBody MatchRequestDto requestDto, Principal principal) {
+        return new ResponseEntity<>(matchService.createMatch(requestDto, principal.getName()), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{matchId}/finish")
+    public ResponseEntity<?> finishMatch(
+            @PathVariable Long matchId,
+            @RequestBody MatchFinishRequestDto request) {
+
+        matchService.finishMatch(matchId, request);
+
+        return ResponseEntity.ok().build();
     }
 
     // 2. Ver un partido por su ID
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<MatchResponseDto> getMatchById(@PathVariable Long id) {
         return ResponseEntity.ok(matchService.getMatchById(id));
     }
@@ -39,6 +47,14 @@ public class MatchController {
     @GetMapping("/team/{teamId}")
     public ResponseEntity<List<MatchResponseDto>> getMatchesByTeam(@PathVariable Long teamId) {
         return ResponseEntity.ok(matchService.getMatchesByTeam(teamId));
+    }
+
+    @PreAuthorize("hasAuthority('COACH')")
+    @GetMapping("/my-matches")
+    public ResponseEntity<List<MatchResponseDto>> getMyMatches(Principal principal) {
+        // Obtenemos los partidos basándonos en el token del entrenador
+        List<MatchResponseDto> matches = matchService.getMatchesByCoachEmail(principal.getName());
+        return ResponseEntity.ok(matches);
     }
 
     // 4. Actualizar partido

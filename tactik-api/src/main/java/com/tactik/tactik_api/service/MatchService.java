@@ -2,9 +2,7 @@ package com.tactik.tactik_api.service;
 
 import com.tactik.tactik_api.dto.*;
 import com.tactik.tactik_api.model.*;
-import com.tactik.tactik_api.repository.MatchRepository;
-import com.tactik.tactik_api.repository.PlayerRepository;
-import com.tactik.tactik_api.repository.TeamRepository;
+import com.tactik.tactik_api.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,31 +15,43 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
+    private final UserRepository userRepository;
+    private final MatchPlayerRepository matchPlayerRepository;
+    private final MatchEventRepository matchEventRepository;
 
-    public MatchService(MatchRepository matchRepository, TeamRepository teamRepository, PlayerRepository playerRepository) {
+    public MatchService(MatchRepository matchRepository, TeamRepository teamRepository, PlayerRepository playerRepository, UserRepository userRepository, MatchPlayerRepository matchPlayerRepository, MatchEventRepository matchEventRepository) {
         this.matchRepository = matchRepository;
         this.teamRepository = teamRepository;
         this.playerRepository = playerRepository;
+        this.userRepository = userRepository;
+        this.matchPlayerRepository = matchPlayerRepository;
+        this.matchEventRepository = matchEventRepository;
     }
 
     // --- 1. CREAR PARTIDO (Previa de la semana) ---
     @Transactional
-    public MatchResponseDto createMatch(MatchRequestDto requestDto) {
-        Team team = teamRepository.findById(requestDto.getTeamId())
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado con el ID: " + requestDto.getTeamId()));
+    public MatchResponseDto createMatch(MatchRequestDto requestDto, String coachEmail) {
+        // 1. Buscamos al entrenador por su email
+        User coach = userRepository.findByEmail(coachEmail)
+                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado con email: " + coachEmail));
+
+        // 2. Comprobamos que el entrenador tenga un equipo asignado
+        if (coach.getTeam() == null) {
+            throw new RuntimeException("El entrenador no tiene un equipo asignado");
+        }
+        Team team = coach.getTeam(); // Sacamos el equipo directamente del entrenador
 
         Match match = new Match();
         match.setDateTime(requestDto.getDateTime());
         match.setLocalisation(requestDto.getLocalisation());
         match.setOpponent(requestDto.getOpponent());
-        match.setIsHome(requestDto.getIsHome());
+        match.setHome(requestDto.getIsHome());
         match.setDurationMinutes(requestDto.getDurationMinutes());
         match.setMatchType(requestDto.getMatchType());
 
-        // Al crear el partido, el marcador siempre empieza 0-0
-        match.setOurGoals(0);
-        match.setOpponentGoals(0);
-        match.setTeam(team);
+        match.setHomeScore(0);
+        match.setAwayScore(0);
+        match.setTeam(team); // Le asignamos el equipo automáticamente
 
         Match savedMatch = matchRepository.save(match);
         return mapToResponseDto(savedMatch);
@@ -101,11 +111,11 @@ public class MatchService {
                 match.getDateTime(),
                 match.getLocalisation(),
                 match.getOpponent(),
-                match.getIsHome(),
+                match.getHome(),
                 match.getDurationMinutes(),
                 match.getMatchType(),
-                match.getOurGoals(),
-                match.getOpponentGoals(),
+                match.getHomeScore(),
+                match.getAwayScore(),
                 match.getTeam().getId(),
                 playersDto,
                 eventsDto
@@ -122,7 +132,7 @@ public class MatchService {
         match.setDateTime(requestDto.getDateTime());
         match.setLocalisation(requestDto.getLocalisation());
         match.setOpponent(requestDto.getOpponent());
-        match.setIsHome(requestDto.getIsHome());
+        match.setHome(requestDto.getIsHome());
         match.setDurationMinutes(requestDto.getDurationMinutes());
         match.setMatchType(requestDto.getMatchType());
 
@@ -199,5 +209,76 @@ public class MatchService {
         // 3. Guardamos el acta actualizada
         Match updatedMatch = matchRepository.save(match);
         return mapToResponseDto(updatedMatch);
+    }
+
+    public List<MatchResponseDto> getMatchesByCoachEmail(String email) {
+        User coach = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado"));
+
+        if (coach.getTeam() == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        // Asumo que tienes un findByTeamId en tu MatchRepository
+        List<Match> matches = matchRepository.findByTeamId(coach.getTeam().getId());
+
+        return matches.stream()
+                .map(this::mapToResponseDto) // O como se llame tu mapeador
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional
+    public void finishMatch(Long matchId, MatchFinishRequestDto request) {
+
+        // 1. Buscamos el partido y actualizamos el marcador final y el estado
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
+
+        // (Asumiendo que tienes homeScore y awayScore en tu entidad Match)
+        match.setHomeScore(request.getHomeScore());
+        match.setAwayScore(request.getAwayScore());
+        match.setStatus("FINALIZADO"); // O como manejes el estado en tu entidad
+
+        matchRepository.save(match);
+
+        // 2. Guardamos la alineación (Quién jugó y en qué posición)
+        if (request.getPlayers() != null) {
+            for (MatchPlayerRequestDto playerDto : request.getPlayers()) {
+                Player player = playerRepository.findById(playerDto.getPlayerId())
+                        .orElseThrow(() -> new RuntimeException("Jugador no encontrado: " + playerDto.getPlayerId()));
+
+                MatchPlayer matchPlayer = new MatchPlayer();
+                matchPlayer.setMatch(match);
+                matchPlayer.setPlayer(player);
+                matchPlayer.setRole(playerDto.getRole()); // Tu Enum (TITULAR/SUPLENTE)
+                matchPlayer.setTacticalPosition(playerDto.getTacticalPosition());
+
+                matchPlayerRepository.save(matchPlayer);
+            }
+        }
+
+        // 3. Guardamos los eventos (Goles, Tarjetas, Cambios) para la línea de tiempo
+        if (request.getEvents() != null) {
+            for (MatchEventRequestDto eventDto : request.getEvents()) {
+                MatchEvent event = new MatchEvent();
+                event.setMatch(match);
+                event.setMatchMinute(eventDto.getMatchMinute());
+                event.setEventType(eventDto.getEventType()); // Tu Enum (GOAL, YELLOW...)
+
+                // Asignamos el jugador principal (el que marca, ve la tarjeta o entra al campo)
+                if (eventDto.getPrimaryPlayerId() != null) {
+                    Player primary = playerRepository.findById(eventDto.getPrimaryPlayerId()).orElse(null);
+                    event.setPrimaryPlayer(primary);
+                }
+
+                // Asignamos el jugador secundario (solo se usa en cambios: el que sale del campo)
+                if (eventDto.getSecondaryPlayerId() != null) {
+                    Player secondary = playerRepository.findById(eventDto.getSecondaryPlayerId()).orElse(null);
+                    event.setSecondaryPlayer(secondary);
+                }
+
+                matchEventRepository.save(event);
+            }
+        }
     }
 }

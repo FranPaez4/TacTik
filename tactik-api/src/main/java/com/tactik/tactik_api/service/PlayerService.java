@@ -2,10 +2,7 @@ package com.tactik.tactik_api.service;
 
 import com.tactik.tactik_api.dto.PlayerRequestDto;
 import com.tactik.tactik_api.dto.PlayerResponseDto;
-import com.tactik.tactik_api.model.Player;
-import com.tactik.tactik_api.model.PlayerStatus;
-import com.tactik.tactik_api.model.Team;
-import com.tactik.tactik_api.model.User;
+import com.tactik.tactik_api.model.*;
 import com.tactik.tactik_api.repository.PlayerRepository;
 import com.tactik.tactik_api.repository.UserRepository;
 import jakarta.transaction.Transactional;

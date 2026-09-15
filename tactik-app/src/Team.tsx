@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from './api/axio'; // Tu instancia de Axios configurada
 import AddPlayerForm from './components/AddPlayerForm';
+import EditPlayerForm from './components/EditPlayerForm';
 
 interface Player {
   id: number;
@@ -86,21 +87,35 @@ export default function Team() {
   // --------------------------------------------------------
   // RENDER: VISTA DE EDICIÓN
   // --------------------------------------------------------
-  if (teamView === 'edit') {
+  if (teamView === 'edit' && playerToEdit) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-2xl mx-auto">
         <button 
           onClick={() => { setTeamView('list'); setPlayerToEdit(null); }} 
           className="text-slate-500 hover:text-emerald-600 font-semibold mb-2 flex items-center gap-2 transition"
         >
-          &larr; Cancelar edición
+          &larr; Volver a la plantilla
         </button>
         
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h2 className="text-xl font-bold text-slate-800 mb-4">
-            Editando a: <span className="text-emerald-600">{playerToEdit?.firstName} {playerToEdit?.lastName}</span>
+          <h2 className="text-xl font-bold text-slate-800 mb-2 border-b border-slate-100 pb-4">
+            Editando a: <span className="text-emerald-600">{playerToEdit.firstName} {playerToEdit.lastName}</span>
           </h2>
-          {/* Aquí irá tu componente de edición cuando lo adaptemos */}
+
+          {/* AQUÍ INSERTAMOS EL NUEVO COMPONENTE */}
+          <EditPlayerForm 
+            player={playerToEdit}
+            onCancel={() => { 
+              setTeamView('list'); 
+              setPlayerToEdit(null); 
+            }}
+            onSuccess={() => {
+              setTeamView('list');
+              setPlayerToEdit(null);
+              // Como cambiamos teamView a 'list', el useEffect saltará y recargará la lista actualizada
+            }}
+          />
+
         </div>
       </div>
     );

@@ -26,15 +26,17 @@ public class Match {
     private String localisation;
     private String opponent;
 
-    private Boolean isHome;
+    private Boolean home;
 
     private Integer durationMinutes;
 
     @Enumerated(EnumType.STRING)
     private MatchType matchType;
 
-    private Integer ourGoals;
-    private Integer opponentGoals;
+    private Integer homeScore;
+    private Integer awayScore;
+
+    private String status;
 
     // El equipo nuestro que juega
     @ManyToOne
