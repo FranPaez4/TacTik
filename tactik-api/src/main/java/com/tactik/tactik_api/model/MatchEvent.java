@@ -29,11 +29,11 @@ public class MatchEvent {
     private MatchEventType eventType;
 
     @ManyToOne
-    @JoinColumn(name = "primary_player_id", nullable = false)
+    @JoinColumn(name = "primary_player_id")
     private Player primaryPlayer;
 
     // Solo para SUSTITUCION: el que SALE del campo
     @ManyToOne
-    @JoinColumn(name = "secondary_player_id", nullable = true)
+    @JoinColumn(name = "secondary_player_id")
     private Player secondaryPlayer;
 }

@@ -51,6 +51,7 @@ public class MatchService {
 
         match.setHomeScore(0);
         match.setAwayScore(0);
+        match.setStatus("PROGRAMADO"); // <-- AÑADIDO: Por defecto empieza como programado
         match.setTeam(team); // Le asignamos el equipo automáticamente
 
         Match savedMatch = matchRepository.save(match);
@@ -99,7 +100,7 @@ public class MatchService {
                         me.getId(),
                         me.getMatchMinute(),
                         me.getEventType(),
-                        me.getPrimaryPlayer().getId(),
+                        me.getPrimaryPlayer() !=null ? me.getPrimaryPlayer().getId() : null,
                         // Si hay un jugador secundario (cambio), sacamos su ID. Si no, null.
                         me.getSecondaryPlayer() != null ? me.getSecondaryPlayer().getId() : null
                 ))
@@ -117,6 +118,7 @@ public class MatchService {
                 match.getHomeScore(),
                 match.getAwayScore(),
                 match.getTeam().getId(),
+                match.getStatus(),
                 playersDto,
                 eventsDto
         );

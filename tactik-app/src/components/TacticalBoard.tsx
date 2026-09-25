@@ -21,7 +21,7 @@ interface TacticalBoardProps {
   selectedPlayer: PlayerFromTeam | null;
   onPlayerAssigned: () => void;
   teamPlayers: PlayerFromTeam[];
-  onMatchEvent: (type: 'GOAL' | 'YELLOW' | 'RED' | 'SUB', playerIn: PlayerFromTeam, playerOut?: PlayerFromTeam) => void;
+  onMatchEvent: (type: 'GOL' | 'TARJETA_AMARILLA' | 'TARJETA_ROJA' | 'SUSTITUCION', playerIn: PlayerFromTeam, playerOut?: PlayerFromTeam) => void;
 }
 
 // Definimos las posiciones base según la formación
@@ -192,7 +192,7 @@ export default function TacticalBoard({ selectedPlayer, onPlayerAssigned, teamPl
                       Acción: {player.assignedPlayer.firstName}
                     </div>
                     <button 
-                      onClick={() => { onMatchEvent('GOAL', player.assignedPlayer!); setActiveMenuPositionId(null); }}
+                      onClick={() => { onMatchEvent('GOL', player.assignedPlayer!); setActiveMenuPositionId(null); }}
                       className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-lg flex items-center gap-2"
                     >
                       <span>⚽</span> Registrar Gol
@@ -204,13 +204,13 @@ export default function TacticalBoard({ selectedPlayer, onPlayerAssigned, teamPl
                       <span>🔄</span> Hacer Cambio
                     </button>
                     <button 
-                      onClick={() => { onMatchEvent('YELLOW', player.assignedPlayer!); setActiveMenuPositionId(null); }}
+                      onClick={() => { onMatchEvent('TARJETA_AMARILLA', player.assignedPlayer!); setActiveMenuPositionId(null); }}
                       className="w-full text-left px-3 py-2 text-sm font-semibold text-yellow-700 hover:bg-yellow-50 rounded-lg flex items-center gap-2"
                     >
                       <span>🟨</span> Tarjeta Amarilla
                     </button>
                     <button 
-                      onClick={() => { onMatchEvent('RED', player.assignedPlayer!); setActiveMenuPositionId(null); }}
+                      onClick={() => { onMatchEvent('TARJETA_ROJA', player.assignedPlayer!); setActiveMenuPositionId(null); }}
                       className="w-full text-left px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 rounded-lg flex items-center gap-2"
                     >
                       <span>🟥</span> Tarjeta Roja
@@ -233,7 +233,7 @@ export default function TacticalBoard({ selectedPlayer, onPlayerAssigned, teamPl
                             onClick={() => {
                               // CAMBIO REAL EN EL CAMPO: Reemplazamos el jugador en esta posición
                               setPlayers(players.map(p => p.id === player.id ? { ...p, assignedPlayer: sub } : p));
-                              onMatchEvent('SUB', sub, player.assignedPlayer!);
+                              onMatchEvent('SUSTITUCION', sub, player.assignedPlayer!);
                               setActiveMenuPositionId(null);
                               setSubMenuView(null);
                             }}
