@@ -25,7 +25,7 @@ interface TacticalBoardProps {
 }
 
 // Definimos las posiciones base según la formación
-const formations: Record<string, { name: string; role: string; x: number; y: number }[]> = {
+/*const formations: Record<string, { name: string; role: string; x: number; y: number }[]> = {
   '4-3-3': [
     { name: 'Portero', role: 'POR', x: 50, y: 88 },
     { name: 'Lateral Dch', role: 'LD', x: 80, y: 70 },
@@ -35,7 +35,7 @@ const formations: Record<string, { name: string; role: string; x: number; y: num
     { name: 'Pivote', role: 'MC', x: 50, y: 55 },
     { name: 'Interior Dch', role: 'MC', x: 68, y: 45 }, 
   ]
-};
+}; */
 
 // Formaciones limpias en coordenadas porcentuales (x: ancho %, y: alto %)
 const tacticalFormations: Record<string, { name: string; pos: { id: number; label: string; x: number; y: number }[] }> = {
