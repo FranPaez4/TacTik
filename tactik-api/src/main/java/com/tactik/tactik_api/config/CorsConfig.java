@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Aplica la regla a todos los endpoints de la API
-                        .allowedOrigins("http://localhost:5173") // El puerto exacto de React (Vite)
+                        .allowedOrigins("http://localhost:5173", "https://tactik-app.onrender.com")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
                         .allowedHeaders("*") // Permitir que envíe cualquier cabecera (necesario para el JWT)
                         .allowCredentials(true); // Fundamental para que acepte tokens de sesión
