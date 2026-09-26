@@ -139,24 +139,45 @@ export default function Dashboard() {
       </main>
 
       {/* Barra de Navegación Inferior (SOLO MÓVIL) */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-slate-900 text-white flex justify-around items-center p-3 border-t border-slate-800 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <a href="#" className="flex flex-col items-center text-emerald-400">
-          <span className="text-xl">📊</span>
-          <span className="text-[10px] font-medium mt-1">Panel</span>
-        </a>
-        <a href="#" className="flex flex-col items-center text-slate-400 hover:text-emerald-400 transition-colors">
-          <span className="text-xl">🛡️</span>
-          <span className="text-[10px] font-medium mt-1">Equipo</span>
-        </a>
-        <a href="#" className="flex flex-col items-center text-slate-400 hover:text-emerald-400 transition-colors">
-          <span className="text-xl">📅</span>
-          <span className="text-[10px] font-medium mt-1">Partidos</span>
-        </a>
-        <a href="#" className="flex flex-col items-center text-slate-400 hover:text-emerald-400 transition-colors">
-          <span className="text-xl">🏃‍♂️</span>
-          <span className="text-[10px] font-medium mt-1">Entreno</span>
-        </a>
-      </nav>
+         <nav className="md:hidden fixed bottom-0 w-full bg-slate-900 text-white flex justify-around items-center border-t border-slate-800 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+  
+          <button 
+             onClick={() => setCurrentView('dashboard')}
+              className={`flex flex-1 flex-col items-center justify-center py-3 transition-colors ${currentView === 'dashboard' ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+                >
+          
+             <span className="text-xl">📊</span> 
+             <span className="text-[10px] font-medium mt-1">Panel</span>
+               </button>
+
+  <button 
+    onClick={() => setCurrentView('team')}
+    className={`flex flex-1 flex-col items-center justify-center py-3 transition-colors ${currentView === 'team' ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+  >
+    
+    <span className="text-xl">🛡️</span>
+    <span className="text-[10px] font-medium mt-1">Equipo</span>
+  </button>
+
+  <button 
+    onClick={() => setCurrentView('match')}
+    className={`flex flex-1 flex-col items-center justify-center py-3 transition-colors ${currentView === 'match' ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+  >
+    
+    <span className="text-xl">⚽</span>
+    <span className="text-[10px] font-medium mt-1">Partidos</span>
+  </button>
+
+  <button 
+    onClick={() => setCurrentView('training')}
+    className={`flex flex-1 flex-col items-center justify-center py-3 transition-colors ${currentView === 'training' ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+  >
+    
+    <span className="text-xl">🏃</span>
+    <span className="text-[10px] font-medium mt-1">Entreno</span>
+  </button>
+
+</nav>
 
     </div>
   );
